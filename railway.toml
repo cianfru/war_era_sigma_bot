@@ -3,8 +3,11 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
+# Migrations run once per deploy (not per container restart).
 preDeployCommand = "alembic upgrade head"
-startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+# Intentionally no startCommand: the Dockerfile CMD wraps the start in `sh -c`
+# so ${PORT:-8000} is expanded by the shell. When startCommand is set on this
+# Railway plan, $PORT is passed literally to uvicorn and the container loops.
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
